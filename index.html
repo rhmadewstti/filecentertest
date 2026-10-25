@@ -1,0 +1,2378 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>File Center SDN 1 Cang</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5B9FE3',
+                        primaryDark: '#3E82C5',
+                        skySoft: '#EAF5FF',
+                        skyLight: '#F5FAFF',
+                        textDark: '#18324A'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F5FAFF;
+            color: #18324A;
+        }
+
+        /* ================================
+           NAVBAR
+        ================================= */
+
+        .top-menu {
+            background: rgba(255,255,255,.96);
+            border-bottom: 1px solid #DCECF9;
+            box-shadow: 0 4px 20px rgba(71, 133, 183, .08);
+        }
+
+        .menu-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 11px 15px;
+            border-radius: 10px;
+            color: #58728A;
+            font-size: 14px;
+            font-weight: 600;
+            transition: .2s;
+            white-space: nowrap;
+        }
+
+        .menu-item:hover {
+            background: #EDF7FF;
+            color: #3E82C5;
+        }
+
+        .menu-item.active {
+            background: #DCEEFF;
+            color: #3278BA;
+        }
+
+        .menu-item.active::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            bottom: -14px;
+            height: 3px;
+            border-radius: 10px;
+            background: #5B9FE3;
+        }
+
+        /* ================================
+           CARD
+        ================================= */
+
+        .card {
+            background: white;
+            border: 1px solid #DFEDF8;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(68, 126, 169, .06);
+        }
+
+        /* ================================
+           INPUT
+        ================================= */
+
+        .input {
+            width: 100%;
+            border: 1px solid #D5E6F3;
+            border-radius: 11px;
+            padding: 12px 14px;
+            outline: none;
+            background: white;
+            color: #18324A;
+            transition: .2s;
+        }
+
+        .input:focus {
+            border-color: #7BB4E8;
+            box-shadow: 0 0 0 3px rgba(91,159,227,.12);
+        }
+
+        /* ================================
+           UPLOAD AREA
+        ================================= */
+
+        .upload-area {
+            border: 2px dashed #A9CCE8;
+            background: #F8FCFF;
+            transition: .25s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag {
+            border-color: #5B9FE3;
+            background: #EFF8FF;
+        }
+
+        /* ================================
+           BUTTON
+        ================================= */
+
+        .btn-primary {
+            background: #5B9FE3;
+            color: white;
+            border-radius: 11px;
+            padding: 12px 18px;
+            font-weight: 700;
+            transition: .2s;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #3E82C5;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #EDF7FF;
+            color: #3E82C5;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 600;
+        }
+
+        /* ================================
+           STAT CARD
+        ================================= */
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #E7F4FF;
+            color: #4B91CF;
+            font-size: 19px;
+        }
+
+        /* ================================
+           PAGE
+        ================================= */
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fade .25s ease;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ================================
+           MODAL
+        ================================= */
+
+        .modal {
+            display: none;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        /* ================================
+           MOBILE MENU
+        ================================= */
+
+        .mobile-menu {
+            display: none;
+        }
+
+        @media(max-width: 900px) {
+
+            .desktop-menu {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: flex;
+            }
+
+            .menu-item.active::after {
+                display: none;
+            }
+
+            .mobile-nav {
+                display: none;
+                border-top: 1px solid #E1EEF8;
+            }
+
+            .mobile-nav.show {
+                display: block;
+            }
+
+            .mobile-nav .menu-item {
+                border-radius: 9px;
+                margin: 3px 0;
+            }
+
+            .mobile-nav .menu-item.active {
+                background: #DCEEFF;
+            }
+
+            .mobile-nav .menu-item.active::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="top-menu sticky top-0 z-40">
+
+    <div class="max-w-7xl mx-auto px-4 lg:px-6">
+
+        <div class="h-[70px] flex items-center justify-between">
+
+            <!-- LOGO -->
+            <div class="flex items-center gap-3">
+
+                <div
+                    class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#79B8EA] to-[#4F94D1] text-white flex items-center justify-center shadow-sm"
+                >
+                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                </div>
+
+                <div>
+                    <h1 class="font-extrabold text-[#18324A] text-base">
+                        File Center SDN 1 Cang
+                    </h1>
+
+                    <p class="text-[11px] text-[#7690A6]">
+                        SD Negeri 1 Cangkring
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- DESKTOP USER -->
+            <div class="hidden md:flex items-center gap-3">
+
+                <div class="text-right">
+                    <p class="text-sm font-bold text-[#26445E]">
+                        Admin Sekolah
+                    </p>
+
+                    <p class="text-xs text-[#8AA0B2]">
+                        Administrator
+                    </p>
+                </div>
+
+                <div
+                    class="w-10 h-10 rounded-full bg-[#DCEEFF] text-[#4388C8] flex items-center justify-center"
+                >
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+            </div>
+
+
+            <!-- MOBILE -->
+            <button
+                id="mobileMenuButton"
+                class="mobile-menu w-10 h-10 rounded-xl bg-[#EAF5FF] text-[#4388C8] items-center justify-center"
+            >
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             DESKTOP MENU
+        ====================================================== -->
+
+        <nav class="desktop-menu flex items-center gap-1 overflow-x-auto pb-3">
+
+            <button
+                class="menu-item active"
+                data-page="dashboard"
+            >
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </button>
+
+            <button
+                class="menu-item"
+                data-page="upload"
+            >
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                Upload File
+            </button>
+
+            <button
+                class="menu-item"
+                data-page="onedrive"
+            >
+                <i class="fa-brands fa-microsoft"></i>
+                File OneDrive
+            </button>
+
+            <button
+                class="menu-item"
+                data-page="folder"
+            >
+                <i class="fa-solid fa-folder"></i>
+                Folder
+            </button>
+
+            <button
+                class="menu-item"
+                data-page="history"
+            >
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Riwayat Upload
+            </button>
+
+            <button
+                class="menu-item"
+                data-page="settings"
+            >
+                <i class="fa-solid fa-gear"></i>
+                Pengaturan
+            </button>
+
+        </nav>
+
+
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main class="max-w-7xl mx-auto px-4 lg:px-6 py-7">
+
+
+<!-- =========================================================
+     DASHBOARD
+========================================================= -->
+
+<section
+    id="dashboard"
+    class="page active"
+>
+
+    <div
+        class="rounded-3xl p-7 md:p-9 mb-7 text-white overflow-hidden relative"
+        style="background:linear-gradient(135deg,#5B9FE3,#79B8EA);"
+    >
+
+        <div class="relative z-10 max-w-2xl">
+
+            <p class="text-blue-50 text-sm mb-2">
+                Selamat datang di File Center
+            </p>
+
+            <h2 class="text-2xl md:text-3xl font-extrabold mb-3">
+                Kelola File Sekolah dengan Mudah
+            </h2>
+
+            <p class="text-blue-50 text-sm md:text-base leading-relaxed">
+                Upload, simpan, dan kelola dokumen sekolah
+                secara terpusat melalui OneDrive.
+            </p>
+
+            <button
+                onclick="showPage('upload')"
+                class="mt-5 bg-white text-[#4388C8] px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:shadow-md transition"
+            >
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i>
+                Upload File
+            </button>
+
+        </div>
+
+        <div class="absolute -right-8 -bottom-12 opacity-10">
+            <i class="fa-solid fa-cloud text-[210px]"></i>
+        </div>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+
+        <div class="card p-5">
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <p class="text-xs text-[#8095A7] mb-2">
+                        Total File
+                    </p>
+
+                    <h3 class="text-2xl font-extrabold">
+                        128
+                    </h3>
+                </div>
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-file"></i>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card p-5">
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <p class="text-xs text-[#8095A7] mb-2">
+                        Folder
+                    </p>
+
+                    <h3 class="text-2xl font-extrabold">
+                        4
+                    </h3>
+                </div>
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-folder"></i>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card p-5">
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <p class="text-xs text-[#8095A7] mb-2">
+                        Upload Hari Ini
+                    </p>
+
+                    <h3 class="text-2xl font-extrabold">
+                        12
+                    </h3>
+                </div>
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card p-5">
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <p class="text-xs text-[#8095A7] mb-2">
+                        Penyimpanan
+                    </p>
+
+                    <h3 class="text-2xl font-extrabold">
+                        2.4 GB
+                    </h3>
+                </div>
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-hard-drive"></i>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- RECENT FILE -->
+
+    <div class="grid lg:grid-cols-3 gap-6">
+
+        <div class="card lg:col-span-2">
+
+            <div class="p-5 border-b border-[#EAF1F6] flex justify-between items-center">
+
+                <div>
+                    <h3 class="font-bold">
+                        File Terbaru
+                    </h3>
+
+                    <p class="text-xs text-[#8AA0B2] mt-1">
+                        File yang baru ditambahkan
+                    </p>
+                </div>
+
+                <button
+                    onclick="showPage('onedrive')"
+                    class="text-xs font-bold text-[#4B91CF]"
+                >
+                    Lihat Semua
+                </button>
+
+            </div>
+
+
+            <div class="divide-y divide-[#EDF3F7]">
+
+                <div class="p-5 flex items-center gap-4">
+
+                    <div class="w-11 h-11 rounded-xl bg-[#EAF5FF] text-[#4388C8] flex items-center justify-center">
+                        <i class="fa-solid fa-file-word"></i>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+
+                        <p class="font-semibold text-sm truncate">
+                            Modul Pembelajaran Kelas 1.docx
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2] mt-1">
+                            Modul Pembelajaran • 2.4 MB
+                        </p>
+
+                    </div>
+
+                    <span class="text-xs text-[#9AAABA]">
+                        10:25
+                    </span>
+
+                </div>
+
+
+                <div class="p-5 flex items-center gap-4">
+
+                    <div class="w-11 h-11 rounded-xl bg-[#FFF5E9] text-[#E39A46] flex items-center justify-center">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+
+                        <p class="font-semibold text-sm truncate">
+                            Jurnal Pembelajaran September.pdf
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2] mt-1">
+                            Jurnal Pembelajaran • 5.8 MB
+                        </p>
+
+                    </div>
+
+                    <span class="text-xs text-[#9AAABA]">
+                        09:40
+                    </span>
+
+                </div>
+
+
+                <div class="p-5 flex items-center gap-4">
+
+                    <div class="w-11 h-11 rounded-xl bg-[#EAF8F0] text-[#55A97A] flex items-center justify-center">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+
+                        <p class="font-semibold text-sm truncate">
+                            Rekap Nilai Siswa.xlsx
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2] mt-1">
+                            Administrasi Sekolah • 1.8 MB
+                        </p>
+
+                    </div>
+
+                    <span class="text-xs text-[#9AAABA]">
+                        Kemarin
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FOLDER -->
+
+        <div class="card">
+
+            <div class="p-5 border-b border-[#EAF1F6]">
+
+                <h3 class="font-bold">
+                    Folder OneDrive
+                </h3>
+
+                <p class="text-xs text-[#8AA0B2] mt-1">
+                    Folder penyimpanan
+                </p>
+
+            </div>
+
+            <div class="p-4 space-y-3">
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#F7FBFF]">
+
+                    <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+                        <i class="fa-solid fa-folder"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-sm font-semibold">
+                            Modul Pembelajaran
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2]">
+                            35 file
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#F7FBFF]">
+
+                    <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+                        <i class="fa-solid fa-folder"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-sm font-semibold">
+                            Jurnal Pembelajaran
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2]">
+                            42 file
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#F7FBFF]">
+
+                    <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+                        <i class="fa-solid fa-folder"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-sm font-semibold">
+                            Administrasi Sekolah
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2]">
+                            31 file
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     UPLOAD
+========================================================= -->
+
+<section
+    id="upload"
+    class="page"
+>
+
+    <div class="mb-6">
+
+        <h2 class="text-2xl font-extrabold">
+            Upload File
+        </h2>
+
+        <p class="text-sm text-[#7D94A8] mt-1">
+            Tambahkan dokumen ke penyimpanan OneDrive sekolah.
+        </p>
+
+    </div>
+
+
+    <div class="grid lg:grid-cols-3 gap-6">
+
+
+        <!-- LEFT -->
+
+        <div class="lg:col-span-2 space-y-6">
+
+            <div class="card p-6">
+
+                <div
+                    id="uploadArea"
+                    class="upload-area rounded-2xl p-10 text-center"
+                >
+
+                    <div class="w-16 h-16 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] mx-auto flex items-center justify-center text-2xl mb-4">
+
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                    </div>
+
+                    <h3 class="font-bold text-lg">
+                        Pilih atau tarik file ke sini
+                    </h3>
+
+                    <p class="text-sm text-[#879BAC] mt-2">
+                        Bisa memilih banyak file sekaligus
+                    </p>
+
+                    <button
+                        onclick="document.getElementById('fileInput').click()"
+                        class="btn-primary mt-5"
+                    >
+                        <i class="fa-solid fa-folder-open mr-2"></i>
+                        Pilih File
+                    </button>
+
+                    <p class="text-xs text-[#9AAABA] mt-4">
+                        PDF, Word, Excel, PowerPoint, JPG, PNG, ZIP, dan lainnya
+                    </p>
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        multiple
+                        class="hidden"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- SELECTED FILE -->
+
+            <div class="card">
+
+                <div class="p-5 border-b border-[#EAF1F6] flex justify-between">
+
+                    <div>
+                        <h3 class="font-bold">
+                            File Dipilih
+                        </h3>
+
+                        <p
+                            id="fileCount"
+                            class="text-xs text-[#8AA0B2] mt-1"
+                        >
+                            Belum ada file
+                        </p>
+                    </div>
+
+                    <button
+                        onclick="clearFiles()"
+                        class="text-xs text-red-400 font-semibold"
+                    >
+                        Hapus Semua
+                    </button>
+
+                </div>
+
+                <div
+                    id="fileList"
+                    class="p-4 space-y-3"
+                >
+
+                    <div class="text-center py-10 text-[#A0AFBB]">
+
+                        <i class="fa-regular fa-file text-3xl mb-3"></i>
+
+                        <p class="text-sm">
+                            Belum ada file yang dipilih
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT -->
+
+        <div class="space-y-6">
+
+
+            <!-- DATA PENGIRIM -->
+
+            <div class="card p-5">
+
+                <h3 class="font-bold mb-1">
+                    Informasi Pengirim
+                </h3>
+
+                <p class="text-xs text-[#8AA0B2] mb-5">
+                    Informasi akan dicatat bersama upload.
+                </p>
+
+
+                <div class="space-y-4">
+
+                    <div>
+
+                        <label class="text-sm font-semibold block mb-2">
+                            Nama
+                        </label>
+
+                        <input
+                            id="nama"
+                            type="text"
+                            class="input"
+                            placeholder="Nama lengkap"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label class="text-sm font-semibold block mb-2">
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            class="input"
+                            placeholder="email@sekolah.id"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label class="text-sm font-semibold block mb-2">
+                            Keterangan
+                        </label>
+
+                        <textarea
+                            id="keterangan"
+                            rows="4"
+                            class="input resize-none"
+                            placeholder="Keterangan file..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FOLDER -->
+
+            <div class="card p-5">
+
+                <h3 class="font-bold mb-1">
+                    Tujuan Folder
+                </h3>
+
+                <p class="text-xs text-[#8AA0B2] mb-4">
+                    Pilih folder OneDrive.
+                </p>
+
+                <button
+                    onclick="openFolderModal()"
+                    class="w-full border border-[#D8E8F3] rounded-xl p-3 flex items-center gap-3 hover:bg-[#F5FAFF] transition text-left"
+                >
+
+                    <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+
+                        <i class="fa-solid fa-folder"></i>
+
+                    </div>
+
+                    <div class="flex-1">
+
+                        <p
+                            id="selectedFolder"
+                            class="text-sm font-bold"
+                        >
+                            Modul Pembelajaran
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2]">
+                            Folder OneDrive
+                        </p>
+
+                    </div>
+
+                    <i class="fa-solid fa-chevron-right text-xs text-[#9AAABA]"></i>
+
+                </button>
+
+            </div>
+
+
+            <!-- UPLOAD BUTTON -->
+
+            <button
+                onclick="startUpload()"
+                class="btn-primary w-full py-4"
+            >
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i>
+                Mulai Upload
+            </button>
+
+
+            <div class="rounded-xl bg-[#EAF5FF] border border-[#D4EAF9] p-4">
+
+                <div class="flex gap-3">
+
+                    <i class="fa-solid fa-circle-info text-[#4B91CF] mt-0.5"></i>
+
+                    <p class="text-xs leading-relaxed text-[#52708A]">
+                        File besar akan diproses secara bertahap agar
+                        proses upload lebih stabil dan mengurangi risiko
+                        file rusak.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     ONEDRIVE
+========================================================= -->
+
+<section
+    id="onedrive"
+    class="page"
+>
+
+    <div class="mb-6">
+
+        <h2 class="text-2xl font-extrabold">
+            File OneDrive
+        </h2>
+
+        <p class="text-sm text-[#7D94A8] mt-1">
+            Daftar file yang tersimpan di OneDrive.
+        </p>
+
+    </div>
+    <div class="card p-5 mb-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div><h3 class="font-bold">Koneksi Microsoft OneDrive</h3><p id="connectionStatus" class="text-sm text-[#7D94A8] mt-1">Belum terhubung. Masuk dengan akun Microsoft untuk memuat file asli.</p><p id="signedInEmail" class="text-xs text-[#8AA0B2] mt-1"></p></div>
+        <div class="flex flex-wrap gap-2"><button id="loginMicrosoft" class="btn-primary">Masuk Microsoft</button><button id="refreshOneDrive" class="btn-secondary">Muat Ulang</button><button id="logoutMicrosoft" class="btn-secondary">Keluar</button></div>
+      </div>
+    </div>
+    <div class="card overflow-hidden">
+
+        <div class="p-5 border-b border-[#EAF1F6] flex flex-wrap gap-3 justify-between">
+
+            <div class="relative">
+
+                <i class="fa-solid fa-search absolute left-4 top-3.5 text-[#9BAEBD] text-sm"></i>
+
+                <input
+                    type="text"
+                    class="input pl-10"
+                    id="oneDriveSearch"
+                    placeholder="Cari file atau folder..."
+                >
+
+            </div>
+
+            <button
+                class="btn-secondary"
+            >
+                <i class="fa-solid fa-filter mr-2"></i>
+                Filter
+            </button>
+
+        </div>
+
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+                <thead class="bg-[#F7FBFF]">
+
+                    <tr class="text-left text-xs text-[#7890A4]">
+
+                        <th class="px-5 py-4">
+                            Nama File
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Folder
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Ukuran
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Tanggal
+                        </th>
+
+                        <th class="px-5 py-4 text-right">
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="onedriveFileTable" class="divide-y divide-[#EDF3F7]"><tr><td colspan="5" class="px-5 py-10 text-center text-[#8AA0B2]">Masuk ke Microsoft untuk memuat file OneDrive.</td></tr></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FOLDER
+========================================================= -->
+
+<section
+    id="folder"
+    class="page"
+>
+
+    <div class="mb-6">
+
+        <h2 class="text-2xl font-extrabold">
+            Folder
+        </h2>
+
+        <p class="text-sm text-[#7D94A8] mt-1">
+            Kelola folder penyimpanan sekolah.
+        </p>
+
+    </div>
+
+
+    <div class="card p-5 mb-5">
+      <h3 class="font-bold">Folder OneDrive</h3>
+      <p id="folderConnectionStatus" class="text-sm text-[#7D94A8] mt-1">Masuk melalui menu File OneDrive untuk melihat folder akunmu.</p>
+      <div id="liveFolderGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5"></div>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 hidden">
+
+
+        <div class="card p-5 hover:-translate-y-1 transition">
+
+            <div class="w-14 h-14 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center text-xl mb-4">
+
+                <i class="fa-solid fa-folder"></i>
+
+            </div>
+
+            <h3 class="font-bold">
+                Modul Pembelajaran
+            </h3>
+
+            <p class="text-xs text-[#8AA0B2] mt-2">
+                35 file
+            </p>
+
+        </div>
+
+
+        <div class="card p-5 hover:-translate-y-1 transition">
+
+            <div class="w-14 h-14 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center text-xl mb-4">
+
+                <i class="fa-solid fa-folder"></i>
+
+            </div>
+
+            <h3 class="font-bold">
+                Jurnal Pembelajaran
+            </h3>
+
+            <p class="text-xs text-[#8AA0B2] mt-2">
+                42 file
+            </p>
+
+        </div>
+
+
+        <div class="card p-5 hover:-translate-y-1 transition">
+
+            <div class="w-14 h-14 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center text-xl mb-4">
+
+                <i class="fa-solid fa-folder"></i>
+
+            </div>
+
+            <h3 class="font-bold">
+                Administrasi Sekolah
+            </h3>
+
+            <p class="text-xs text-[#8AA0B2] mt-2">
+                31 file
+            </p>
+
+        </div>
+
+
+        <div class="card p-5 hover:-translate-y-1 transition">
+
+            <div class="w-14 h-14 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center text-xl mb-4">
+
+                <i class="fa-solid fa-folder"></i>
+
+            </div>
+
+            <h3 class="font-bold">
+                Dokumentasi
+            </h3>
+
+            <p class="text-xs text-[#8AA0B2] mt-2">
+                20 file
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     HISTORY
+========================================================= -->
+
+<section
+    id="history"
+    class="page"
+>
+
+    <div class="mb-6">
+
+        <h2 class="text-2xl font-extrabold">
+            Riwayat Upload
+        </h2>
+
+        <p class="text-sm text-[#7D94A8] mt-1">
+            Riwayat file yang pernah diupload.
+        </p>
+
+    </div>
+
+
+    <div class="card overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+                <thead class="bg-[#F7FBFF]">
+
+                    <tr class="text-left text-xs text-[#7890A4]">
+
+                        <th class="px-5 py-4">
+                            File
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Pengirim
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Folder
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Waktu
+                        </th>
+
+                        <th class="px-5 py-4">
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody class="divide-y divide-[#EDF3F7]">
+
+                    <tr>
+
+                        <td class="px-5 py-4 font-semibold">
+                            Modul Kelas 1.docx
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            Admin Sekolah
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            Modul Pembelajaran
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            25 Sep 2026 10:25
+                        </td>
+
+                        <td class="px-5 py-4">
+
+                            <span class="px-3 py-1.5 rounded-full bg-[#EAF8F0] text-[#4E9A70] text-xs font-bold">
+                                Berhasil
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td class="px-5 py-4 font-semibold">
+                            Jurnal September.pdf
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            Admin Sekolah
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            Jurnal Pembelajaran
+                        </td>
+
+                        <td class="px-5 py-4 text-[#71899C]">
+                            25 Sep 2026 09:40
+                        </td>
+
+                        <td class="px-5 py-4">
+
+                            <span class="px-3 py-1.5 rounded-full bg-[#EAF8F0] text-[#4E9A70] text-xs font-bold">
+                                Berhasil
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SETTINGS
+========================================================= -->
+
+<section
+    id="settings"
+    class="page"
+>
+
+    <div class="mb-6">
+
+        <h2 class="text-2xl font-extrabold">
+            Pengaturan
+        </h2>
+
+        <p class="text-sm text-[#7D94A8] mt-1">
+            Pengaturan aplikasi File Center.
+        </p>
+
+    </div>
+
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+
+        <div class="card p-6">
+
+            <h3 class="font-bold mb-5">
+                Informasi Sekolah
+            </h3>
+
+            <div class="space-y-4">
+
+                <div>
+
+                    <label class="text-sm font-semibold block mb-2">
+                        Nama Sekolah
+                    </label>
+
+                    <input
+                        type="text"
+                        value="SD NEGERI 1 CANGKRING"
+                        class="input"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label class="text-sm font-semibold block mb-2">
+                        Email Sekolah
+                    </label>
+
+                    <input
+                        type="email"
+                        placeholder="email sekolah"
+                        class="input"
+                    >
+
+                </div>
+
+
+                <button class="btn-primary">
+                    Simpan Pengaturan
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card p-6">
+
+            <h3 class="font-bold mb-5">
+                Pengaturan Upload
+            </h3>
+
+            <div class="space-y-5">
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="font-semibold text-sm">
+                            Upload Bertahap
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2] mt-1">
+                            Untuk file berukuran besar
+                        </p>
+
+                    </div>
+
+                    <div class="w-11 h-6 rounded-full bg-[#5B9FE3] relative">
+
+                        <div class="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm"></div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="flex justify-between items-center">
+
+                    <div>
+
+                        <p class="font-semibold text-sm">
+                            Notifikasi Upload
+                        </p>
+
+                        <p class="text-xs text-[#8AA0B2] mt-1">
+                            Tampilkan notifikasi
+                        </p>
+
+                    </div>
+
+                    <div class="w-11 h-6 rounded-full bg-[#5B9FE3] relative">
+
+                        <div class="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =========================================================
+     FOLDER MODAL
+========================================================= -->
+
+<div
+    id="folderModal"
+    class="modal fixed inset-0 z-50 bg-[#18324A]/30 backdrop-blur-sm items-center justify-center p-4"
+>
+
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl">
+
+        <div class="p-5 border-b border-[#EAF1F6] flex justify-between items-center">
+
+            <div>
+
+                <h3 class="font-bold">
+                    Pilih Folder
+                </h3>
+
+                <p class="text-xs text-[#8AA0B2] mt-1">
+                    Tentukan lokasi penyimpanan
+                </p>
+
+            </div>
+
+            <button
+                onclick="closeFolderModal()"
+                class="w-9 h-9 rounded-lg bg-[#F4F8FB] text-[#71899C]"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div class="p-4">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <button id="folderPickerBack" class="btn-secondary text-sm">← Kembali ke OneDrive</button>
+              <span id="folderPickerPath" class="text-xs text-[#71899C]">OneDrive</span>
+            </div>
+            <div id="folderPickerList" class="space-y-2 max-h-72 overflow-y-auto">
+
+            <button
+                onclick="selectFolder('Modul Pembelajaran')"
+                class="folder-option w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F8FE] text-left"
+            >
+
+                <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+
+                    <i class="fa-solid fa-folder"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-sm">
+                        Modul Pembelajaran
+                    </p>
+
+                    <p class="text-xs text-[#8AA0B2]">
+                        Folder pembelajaran
+                    </p>
+
+                </div>
+
+            </button>
+
+
+            <button
+                onclick="selectFolder('Jurnal Pembelajaran')"
+                class="folder-option w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F8FE] text-left"
+            >
+
+                <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+
+                    <i class="fa-solid fa-folder"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-sm">
+                        Jurnal Pembelajaran
+                    </p>
+
+                    <p class="text-xs text-[#8AA0B2]">
+                        Folder jurnal
+                    </p>
+
+                </div>
+
+            </button>
+
+
+            <button
+                onclick="selectFolder('Administrasi Sekolah')"
+                class="folder-option w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F8FE] text-left"
+            >
+
+                <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+
+                    <i class="fa-solid fa-folder"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-sm">
+                        Administrasi Sekolah
+                    </p>
+
+                    <p class="text-xs text-[#8AA0B2]">
+                        Dokumen administrasi
+                    </p>
+
+                </div>
+
+            </button>
+
+
+            <button
+                onclick="selectFolder('Dokumentasi')"
+                class="folder-option w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F8FE] text-left"
+            >
+
+                <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center">
+
+                    <i class="fa-solid fa-folder"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-sm">
+                        Dokumentasi
+                    </p>
+
+                    <p class="text-xs text-[#8AA0B2]">
+                        Dokumentasi sekolah
+                    </p>
+
+                </div>
+
+            </button>
+
+        </div>
+        <div class="px-4 pb-4">
+          <button id="chooseCurrentFolder" class="btn-primary w-full">Pilih folder ini</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     UPLOAD PROGRESS MODAL
+========================================================= -->
+
+<div
+    id="uploadModal"
+    class="modal fixed inset-0 z-50 bg-[#18324A]/30 backdrop-blur-sm items-center justify-center p-4"
+>
+
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
+
+        <div class="text-center">
+
+            <div
+                class="w-16 h-16 rounded-2xl bg-[#EAF5FF] text-[#4B91CF] mx-auto flex items-center justify-center text-2xl mb-4"
+            >
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+
+            <h3
+                id="uploadTitle"
+                class="font-bold text-lg"
+            >
+                Mengupload File
+            </h3>
+
+            <p
+                id="uploadFileName"
+                class="text-xs text-[#8AA0B2] mt-2 truncate"
+            >
+                -
+            </p>
+
+        </div>
+
+
+        <div class="mt-6">
+
+            <div class="flex justify-between text-xs mb-2">
+
+                <span class="text-[#7890A4]">
+                    Progress
+                </span>
+
+                <span
+                    id="uploadPercent"
+                    class="font-bold text-[#4B91CF]"
+                >
+                    0%
+                </span>
+
+            </div>
+
+
+            <div class="w-full h-3 bg-[#EAF1F6] rounded-full overflow-hidden">
+
+                <div
+                    id="uploadProgress"
+                    class="h-full rounded-full bg-[#5B9FE3]"
+                    style="width:0%"
+                ></div>
+
+            </div>
+
+
+            <p
+                id="chunkInfo"
+                class="text-xs text-center text-[#8AA0B2] mt-3"
+            >
+                Menyiapkan upload...
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+    /* =============================================
+       NAVIGATION
+    ============================================= */
+
+    const menuItems =
+        document.querySelectorAll('.menu-item');
+
+    function showPage(pageId) {
+
+        document.querySelectorAll('.page')
+            .forEach(page => {
+                page.classList.remove('active');
+            });
+
+        const page =
+            document.getElementById(pageId);
+
+        if (page) {
+            page.classList.add('active');
+        }
+
+        menuItems.forEach(item => {
+
+            if (item.dataset.page === pageId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+
+        });
+
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+
+        document
+            .getElementById('mobileNav')
+            .classList.remove('show');
+    }
+
+
+    menuItems.forEach(item => {
+
+        item.addEventListener('click', () => {
+
+            const page =
+                item.dataset.page;
+
+            showPage(page);
+
+        });
+
+    });
+
+
+    /* =============================================
+       MOBILE MENU
+    ============================================= */
+
+    const mobileMenuButton =
+        document.getElementById('mobileMenuButton');
+
+    const mobileNav =
+        document.getElementById('mobileNav');
+
+    mobileMenuButton.addEventListener('click', () => {
+
+        mobileNav.classList.toggle('show');
+
+    });
+
+
+    /* =============================================
+       FILE UPLOAD
+    ============================================= */
+
+    const fileInput =
+        document.getElementById('fileInput');
+
+    const uploadArea =
+        document.getElementById('uploadArea');
+
+    let files = [];
+
+
+    fileInput.addEventListener('change', function() {
+
+        addFiles([...this.files]);
+
+    });
+
+
+    uploadArea.addEventListener('dragover', function(e) {
+
+        e.preventDefault();
+
+        uploadArea.classList.add('drag');
+
+    });
+
+
+    uploadArea.addEventListener('dragleave', function() {
+
+        uploadArea.classList.remove('drag');
+
+    });
+
+
+    uploadArea.addEventListener('drop', function(e) {
+
+        e.preventDefault();
+
+        uploadArea.classList.remove('drag');
+
+        addFiles([...e.dataTransfer.files]);
+
+    });
+
+
+    function addFiles(newFiles) {
+
+        files = [
+            ...files,
+            ...newFiles
+        ];
+
+        renderFiles();
+
+    }
+
+
+    /* =============================================
+       FILE SIZE
+    ============================================= */
+
+    function fileSize(bytes) {
+
+        if (bytes === 0) {
+            return '0 Byte';
+        }
+
+        const units = [
+            'Byte',
+            'KB',
+            'MB',
+            'GB',
+            'TB'
+        ];
+
+        const i =
+            Math.floor(
+                Math.log(bytes) /
+                Math.log(1024)
+            );
+
+        return (
+            (bytes / Math.pow(1024, i))
+            .toFixed(2)
+            + ' '
+            + units[i]
+        );
+
+    }
+
+
+    /* =============================================
+       FILE ICON
+    ============================================= */
+
+    function getIcon(fileName) {
+
+        const ext =
+            fileName
+                .split('.')
+                .pop()
+                .toLowerCase();
+
+
+        if (
+            ['doc','docx'].includes(ext)
+        ) {
+            return {
+                icon: 'fa-file-word',
+                bg: '#EAF5FF',
+                color: '#4388C8'
+            };
+        }
+
+
+        if (
+            ['xls','xlsx','csv'].includes(ext)
+        ) {
+            return {
+                icon: 'fa-file-excel',
+                bg: '#EAF8F0',
+                color: '#4E9A70'
+            };
+        }
+
+
+        if (
+            ['ppt','pptx'].includes(ext)
+        ) {
+            return {
+                icon: 'fa-file-powerpoint',
+                bg: '#FFF2EC',
+                color: '#D97950'
+            };
+        }
+
+
+        if (
+            ext === 'pdf'
+        ) {
+            return {
+                icon: 'fa-file-pdf',
+                bg: '#FFF2F2',
+                color: '#D56B6B'
+            };
+        }
+
+
+        if (
+            ['jpg','jpeg','png','gif','webp'].includes(ext)
+        ) {
+            return {
+                icon: 'fa-file-image',
+                bg: '#F1EDFF',
+                color: '#8172C7'
+            };
+        }
+
+
+        if (
+            ['zip','rar','7z'].includes(ext)
+        ) {
+            return {
+                icon: 'fa-file-zipper',
+                bg: '#FFF8E8',
+                color: '#C69B45'
+            };
+        }
+
+
+        return {
+            icon: 'fa-file',
+            bg: '#EAF5FF',
+            color: '#4388C8'
+        };
+
+    }
+
+
+    /* =============================================
+       RENDER FILE
+    ============================================= */
+
+    function renderFiles() {
+
+        const fileList =
+            document.getElementById('fileList');
+
+        const fileCount =
+            document.getElementById('fileCount');
+
+
+        if (!files.length) {
+
+            fileCount.textContent =
+                'Belum ada file';
+
+            fileList.innerHTML = `
+                <div class="text-center py-10 text-[#A0AFBB]">
+
+                    <i class="fa-regular fa-file text-3xl mb-3"></i>
+
+                    <p class="text-sm">
+                        Belum ada file yang dipilih
+                    </p>
+
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        fileCount.textContent =
+            files.length + ' file dipilih';
+
+
+        fileList.innerHTML =
+            files.map((file, index) => {
+
+                const icon =
+                    getIcon(file.name);
+
+                const large =
+                    file.size >=
+                    100 * 1024 * 1024;
+
+
+                return `
+
+                    <div class="border border-[#E3EDF4] rounded-xl p-3 flex items-center gap-3">
+
+                        <div
+                            class="w-11 h-11 rounded-lg flex items-center justify-center"
+                            style="
+                                background:${icon.bg};
+                                color:${icon.color};
+                            "
+                        >
+
+                            <i class="fa-solid ${icon.icon}"></i>
+
+                        </div>
+
+
+                        <div class="flex-1 min-w-0">
+
+                            <p class="font-semibold text-sm truncate">
+                                ${file.name}
+                            </p>
+
+                            <div class="flex items-center gap-2 mt-1">
+
+                                <span class="text-xs text-[#8AA0B2]">
+                                    ${fileSize(file.size)}
+                                </span>
+
+                                ${
+                                    large
+                                    ? `
+                                        <span class="text-[10px] bg-[#EAF5FF] text-[#4388C8] px-2 py-1 rounded-full font-bold">
+                                            Upload Bertahap
+                                        </span>
+                                      `
+                                    : ''
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            onclick="removeFile(${index})"
+                            class="w-8 h-8 rounded-lg hover:bg-[#FFF1F1] text-[#B0BCC5]"
+                        >
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                    </div>
+
+                `;
+
+            }).join('');
+
+    }
+
+
+    /* =============================================
+       REMOVE FILE
+    ============================================= */
+
+    function removeFile(index) {
+
+        files.splice(index, 1);
+
+        renderFiles();
+
+    }
+
+
+    function clearFiles() {
+
+        files = [];
+
+        fileInput.value = '';
+
+        renderFiles();
+
+    }
+
+
+    /* =============================================
+       FOLDER MODAL
+    ============================================= */
+
+    function openFolderModal() {
+
+        document
+            .getElementById('folderModal')
+            .classList.add('show');
+
+    }
+
+
+    function closeFolderModal() {
+
+        document
+            .getElementById('folderModal')
+            .classList.remove('show');
+
+    }
+
+
+    function selectFolder(folder) {
+
+        document
+            .getElementById('selectedFolder')
+            .textContent = folder;
+
+        closeFolderModal();
+
+    }
+
+
+    /* =============================================
+       START UPLOAD
+    ============================================= */
+
+    function startUpload() {
+
+        const nama =
+            document
+                .getElementById('nama')
+                .value.trim();
+
+        const email =
+            document
+                .getElementById('email')
+                .value.trim();
+
+
+        if (!files.length) {
+
+            alert('Silakan pilih file terlebih dahulu.');
+
+            return;
+
+        }
+
+
+        if (!nama) {
+
+            alert('Nama pengirim wajib diisi.');
+
+            return;
+
+        }
+
+
+        if (!email) {
+
+            alert('Email wajib diisi.');
+
+            return;
+
+        }
+
+
+        simulateUpload();
+
+    }
+
+
+    /* =============================================
+       SIMULATE CHUNK UPLOAD
+    ============================================= */
+
+    async function simulateUpload() {
+
+        const modal =
+            document.getElementById('uploadModal');
+
+        const progress =
+            document.getElementById('uploadProgress');
+
+        const percent =
+            document.getElementById('uploadPercent');
+
+        const fileName =
+            document.getElementById('uploadFileName');
+
+        const chunkInfo =
+            document.getElementById('chunkInfo');
+
+
+        modal.classList.add('show');
+
+
+        const chunkSize =
+            10 * 1024 * 1024;
+
+
+        for (
+            let i = 0;
+            i < files.length;
+            i++
+        ) {
+
+            const file =
+                files[i];
+
+            fileName.textContent =
+                file.name;
+
+
+            const totalChunks =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        file.size /
+                        chunkSize
+                    )
+                );
+
+
+            for (
+                let chunk = 1;
+                chunk <= totalChunks;
+                chunk++
+            ) {
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            150
+                        )
+                );
+
+
+                const progressValue =
+                    Math.round(
+                        (chunk /
+                        totalChunks) *
+                        100
+                    );
+
+
+                progress.style.width =
+                    progressValue + '%';
+
+                percent.textContent =
+                    progressValue + '%';
+
+
+                chunkInfo.textContent =
+                    `Memproses bagian ${chunk} dari ${totalChunks}`;
+
+            }
+
+        }
+
+
+        progress.style.width =
+            '100%';
+
+        percent.textContent =
+            '100%';
+
+        chunkInfo.textContent =
+            'Upload selesai';
+
+
+        document
+            .getElementById('uploadTitle')
+            .textContent =
+                'Upload Berhasil';
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    1200
+                )
+        );
+
+
+        modal.classList.remove('show');
+
+
+        document
+            .getElementById('uploadTitle')
+            .textContent =
+                'Mengupload File';
+
+
+        progress.style.width =
+            '0%';
+
+        percent.textContent =
+            '0%';
+
+        chunkInfo.textContent =
+            'Menyiapkan upload...';
+
+
+        alert(
+            'File berhasil diproses untuk upload.'
+        );
+
+    }
+
+
+</script>
+
+
+<script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
+<script>
+(() => {
+ "use strict";
+ const CLIENT_ID="09fbce40-e7f5-48f7-8b74-6219f124e597";
+ const GRAPH="https://graph.microsoft.com/v1.0";
+ const SCOPES=["Files.ReadWrite"];
+ const REDIRECT=location.origin+location.pathname;
+ let app,account,accessToken=null,folderId=null,folderName="OneDrive",items=[];
+ let uploadTargetId=null,uploadTargetName="OneDrive";
+ const $=id=>document.getElementById(id);
+ const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const size=n=>{if(n==null)return "—";let u=["B","KB","MB","GB","TB"],i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return n.toFixed(i?1:0)+" "+u[i];};
+ const status=(m,bad=false)=>{if($("connectionStatus")){$("connectionStatus").textContent=m;$("connectionStatus").className="text-sm mt-1 "+(bad?"text-red-600":"text-[#7D94A8]");}};
+ function init(){if(!window.msal)throw Error("Microsoft login gagal dimuat. Periksa koneksi internet.");if(!app)app=new msal.PublicClientApplication({auth:{clientId:CLIENT_ID,authority:"https://login.microsoftonline.com/common/",redirectUri:REDIRECT},cache:{cacheLocation:"sessionStorage"}});return app;}
+ async function login(){init();account=account||app.getAllAccounts()[0];if(!account){let r=await app.loginPopup({scopes:SCOPES});account=r.account;}try{let r=await app.acquireTokenSilent({scopes:SCOPES,account});accessToken=r.accessToken;}catch{let r=await app.acquireTokenPopup({scopes:SCOPES,account});accessToken=r.accessToken;}if($("signedInEmail"))$("signedInEmail").textContent=account.username||account.name||"";return accessToken;}
+ async function api(path,options={}){if(!accessToken)await login();let r=await fetch(path.startsWith("http")?path:GRAPH+path,{...options,headers:{Authorization:"Bearer "+accessToken,...(options.headers||{})}});if(!r.ok){let msg="";try{msg=(await r.json()).error?.message||"";}catch{}throw Error("Microsoft Graph "+r.status+(msg?": "+msg:""));}return r.status===204?null:r.json();}
+ async function children(id){let url=id?`/me/drive/items/${encodeURIComponent(id)}/children?$top=200`:"/me/drive/root/children?$top=200";let r=await api(url),out=r.value||[];while(r["@odata.nextLink"]){r=await api(r["@odata.nextLink"]);out.push(...(r.value||[]));}return out;}
+ function icon(item){if(item.folder)return "fa-folder";let e=item.name.split(".").pop().toLowerCase();if(e==="pdf")return "fa-file-pdf";if(["doc","docx"].includes(e))return "fa-file-word";if(["xls","xlsx","csv"].includes(e))return "fa-file-excel";if(["ppt","pptx"].includes(e))return "fa-file-powerpoint";if(["jpg","jpeg","png","gif","webp"].includes(e))return "fa-file-image";return "fa-file";}
+ function render(){let body=$("onedriveFileTable");if(!body)return;let q=($("oneDriveSearch")?.value||"").toLowerCase();let rows=items.filter(x=>x.name.toLowerCase().includes(q));if(!rows.length){body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Tidak ada file atau folder pada pencarian/lokasi ini.</td></tr>';return;}body.innerHTML=rows.map(x=>`<tr><td class="px-5 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4388C8] flex items-center justify-center"><i class="fa-solid ${icon(x)}"></i></div><span class="font-semibold break-all">${esc(x.name)}</span></div></td><td class="px-5 py-4 text-[#71899C]">${x.folder?"Folder":esc(folderName)}</td><td class="px-5 py-4 text-[#71899C]">${x.folder?(x.folder.childCount??"—")+" item":size(x.size)}</td><td class="px-5 py-4 text-[#71899C]">${x.lastModifiedDateTime?new Date(x.lastModifiedDateTime).toLocaleDateString("id-ID"):"—"}</td><td class="px-5 py-4 text-right">${x.folder?`<button class="text-[#4B91CF] font-semibold" data-folder="${esc(x.id)}" data-name="${esc(x.name)}">Buka</button>`:`<a class="text-[#4B91CF] font-semibold" target="_blank" rel="noopener" href="${esc(x.webUrl||"#")}">Buka file</a>`}</td></tr>`).join("");body.querySelectorAll("[data-folder]").forEach(b=>b.onclick=()=>load(b.dataset.folder,b.dataset.name));}
+ async function load(id=null,name="OneDrive"){try{status("Memuat isi OneDrive...");folderId=id;folderName=name;items=await children(id);render();status(`Terhubung. ${items.length} item di ${name}.`);renderFolders(items);}catch(e){status(e.message,true);}}
+ function renderFolders(arr){let grid=$("liveFolderGrid");if(!grid)return;let f=arr.filter(x=>x.folder);$("folderConnectionStatus").textContent="Folder yang tampil diambil dari OneDrive akun yang terhubung.";grid.innerHTML=f.length?f.map(x=>`<button class="card p-4 text-left hover:bg-[#F7FBFF]" data-live="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-2xl text-[#4B91CF]"></i><p class="font-bold mt-3 break-words">${esc(x.name)}</p><p class="text-xs text-[#8AA0B2] mt-1">${x.folder.childCount??0} item</p></button>`).join(""):'<p class="text-sm text-[#8AA0B2]">Tidak ada subfolder di lokasi ini.</p>';grid.querySelectorAll("[data-live]").forEach(b=>b.onclick=()=>{showPage("onedrive");load(b.dataset.live,b.dataset.name);});}
+ $("loginMicrosoft")?.addEventListener("click",async()=>{try{await login();await load();}catch(e){status(e.message||"Login gagal.",true);}});
+ $("refreshOneDrive")?.addEventListener("click",async()=>{try{await login();await load(folderId,folderName);}catch(e){status(e.message,true);}});
+ $("logoutMicrosoft")?.addEventListener("click",async()=>{try{init();let a=account||app.getAllAccounts()[0];accessToken=null;account=null;if(a)await app.logoutPopup({account:a});status("Sudah keluar.");$("signedInEmail").textContent="";$("onedriveFileTable").innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center">Masuk kembali untuk melihat file.</td></tr>';}catch(e){status(e.message,true);}});
+ $("oneDriveSearch")?.addEventListener("input",render);
+ // Folder selector navigates real OneDrive folders; choose current location as upload target.
+ const oldOpen=window.openFolderModal;
+ window.openFolderModal=async()=>{if(!account){alert("Masuk Microsoft dahulu melalui menu File OneDrive.");showPage("onedrive");return;}$("folderModal").classList.add("show");await pickerLoad(null,"OneDrive");};
+ async function pickerLoad(id,name){uploadTargetId=id;uploadTargetName=name;let list=$("folderPickerList");if(!list){alert("Komponen pemilih folder tidak ditemukan di HTML.");return;}$("folderPickerPath").textContent=name;try{let arr=await children(id);let dirs=arr.filter(x=>x.folder);list.innerHTML=dirs.length?dirs.map(x=>`<button class="w-full text-left p-3 rounded-xl hover:bg-[#F1F8FE] flex items-center gap-3" data-pick="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-[#4B91CF]"></i><span class="font-semibold text-sm">${esc(x.name)}</span><i class="fa-solid fa-chevron-right ml-auto text-xs"></i></button>`).join(""):'<p class="text-sm text-[#8AA0B2] p-3">Tidak ada subfolder. Kamu dapat memilih folder ini.</p>';list.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>pickerLoad(b.dataset.pick,b.dataset.name));}catch(e){list.innerHTML=`<p class="text-sm text-red-500">${esc(e.message)}</p>`;}}
+ $("folderPickerBack")?.addEventListener("click",()=>pickerLoad(null,"OneDrive"));
+ $("chooseCurrentFolder")?.addEventListener("click",()=>{$("selectedFolder").textContent=uploadTargetName;$("folderModal").classList.remove("show");});
+ // Real upload replaces the previous simulated progress.
+ window.startUpload=async()=>{if(!files.length){alert("Silakan pilih file terlebih dahulu.");return;}if(!$("nama").value.trim()||!$("email").value.trim()){alert("Nama dan email pengirim wajib diisi.");return;}if(!account){alert("Masuk Microsoft terlebih dahulu.");showPage("onedrive");return;}try{await login();$("uploadModal").classList.add("show");for(let i=0;i<files.length;i++){let f=files[i];$("uploadFileName").textContent=f.name;if(f.size>250*1024*1024)throw Error(f.name+" lebih dari 250 MB; upload bertahap belum diaktifkan.");let base=uploadTargetId?`/me/drive/items/${encodeURIComponent(uploadTargetId)}`:"/me/drive/root";await api(`${base}:/${encodeURIComponent(f.name)}:/content`,{method:"PUT",headers:{"Content-Type":f.type||"application/octet-stream"},body:f});let p=Math.round((i+1)/files.length*100);$("uploadProgress").style.width=p+"%";$("uploadPercent").textContent=p+"%";$("chunkInfo").textContent=`Berhasil mengunggah ${i+1} dari ${files.length} file`;}files=[];fileInput.value="";renderFiles();$("uploadTitle").textContent="Upload Berhasil";$("chunkInfo").textContent="File sudah tersimpan di OneDrive.";setTimeout(()=>{$("uploadModal").classList.remove("show");$("uploadTitle").textContent="Mengupload File";$("uploadProgress").style.width="0%";$("uploadPercent").textContent="0%";showPage("onedrive");load(folderId,folderName);},1000);}catch(e){$("uploadModal").classList.remove("show");alert("Upload gagal: "+e.message);}};
+ if(location.protocol==="file:")status("Buka melalui VS Code Live Server, jangan klik file HTML langsung.",true);
+})();
+</script>
+
+</body>
+</html>
