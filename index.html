@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -468,7 +467,9 @@
                         Total File
                     </p>
 
-                    <h3 id="statTotalFiles" class="text-2xl font-extrabold">—</h3>
+                    <h3 class="text-2xl font-extrabold">
+                        128
+                    </h3>
                 </div>
 
                 <div class="stat-icon">
@@ -487,7 +488,9 @@
                         Folder
                     </p>
 
-                    <h3 id="statTotalFolders" class="text-2xl font-extrabold">—</h3>
+                    <h3 class="text-2xl font-extrabold">
+                        4
+                    </h3>
                 </div>
 
                 <div class="stat-icon">
@@ -506,7 +509,9 @@
                         Upload Hari Ini
                     </p>
 
-                    <h3 id="statTodayUploads" class="text-2xl font-extrabold">—</h3>
+                    <h3 class="text-2xl font-extrabold">
+                        12
+                    </h3>
                 </div>
 
                 <div class="stat-icon">
@@ -525,7 +530,9 @@
                         Penyimpanan
                     </p>
 
-                    <h3 id="statStorage" class="text-2xl font-extrabold">—</h3>
+                    <h3 class="text-2xl font-extrabold">
+                        2.4 GB
+                    </h3>
                 </div>
 
                 <div class="stat-icon">
@@ -566,7 +573,7 @@
             </div>
 
 
-            <div id="dashboardRecentFiles" class="divide-y divide-[#EDF3F7]">
+            <div class="divide-y divide-[#EDF3F7]">
 
                 <div class="p-5 flex items-center gap-4">
 
@@ -663,7 +670,7 @@
 
             </div>
 
-            <div id="dashboardFolderList" class="p-4 space-y-3">
+            <div class="p-4 space-y-3">
 
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-[#F7FBFF]">
 
@@ -989,8 +996,9 @@
                     <i class="fa-solid fa-circle-info text-[#4B91CF] mt-0.5"></i>
 
                     <p class="text-xs leading-relaxed text-[#52708A]">
-                        Untuk percobaan ini, upload langsung mendukung file hingga sekitar 250 MB.
-                        Upload bertahap untuk file yang lebih besar belum diaktifkan.
+                        File besar akan diproses secara bertahap agar
+                        proses upload lebih stabil dan mengurangi risiko
+                        file rusak.
                     </p>
 
                 </div>
@@ -1268,8 +1276,8 @@
                 </thead>
 
 
-                <tbody id="uploadHistoryBody" class="divide-y divide-[#EDF3F7]">
-                    <tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Riwayat akan tampil setelah URL Apps Script dipasang.</td></tr>
+                <tbody id="historyTableBody" class="divide-y divide-[#EDF3F7]">
+                    <tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Memuat riwayat...</td></tr>
                 </tbody>
 
             </table>
@@ -1678,6 +1686,10 @@
             page.classList.add('active');
         }
 
+        if (pageId === 'history' && window.loadUploadHistory) {
+            window.loadUploadHistory();
+        }
+
         menuItems.forEach(item => {
 
             if (item.dataset.page === pageId) {
@@ -1707,7 +1719,6 @@
                 item.dataset.page;
 
             showPage(page);
-            if(page === "history") loadUploadHistory();
 
         });
 
@@ -2269,6 +2280,63 @@
     }
 
 
+
+
+    // Google Apps Script API untuk riwayat upload
+    const FILE_CENTER_API = "https://script.google.com/macros/s/AKfycbzGhZBfVfrT2xI5IecN-gEOb6Q472-rVIvLjHjffNnNQoFamHZQh_lFlAuJRee7ZjE8/exec";
+
+    function escapeHistoryText(value) {
+        return String(value ?? "").replace(/[&<>\"']/g, c => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+        }[c]));
+    }
+
+    window.loadUploadHistory = async function() {
+        const body = document.getElementById("historyTableBody");
+        if (!body) return;
+        body.innerHTML = '<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Memuat riwayat...</td></tr>';
+        try {
+            const response = await fetch(FILE_CENTER_API + "?action=list&t=" + Date.now());
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            const result = await response.json();
+            if (!result.success) throw new Error(result.message || "API gagal membaca data");
+            const rows = result.data || [];
+            if (!rows.length) {
+                body.innerHTML = '<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Belum ada riwayat upload.</td></tr>';
+                return;
+            }
+            body.innerHTML = rows.map(row => {
+                const fileCell = row.fileUrl
+                    ? `<a class="font-semibold text-[#4B91CF] hover:underline break-all" href="${escapeHistoryText(row.fileUrl)}" target="_blank" rel="noopener">${escapeHistoryText(row.namaFile || "Tanpa nama")}</a>`
+                    : `<span class="font-semibold break-all">${escapeHistoryText(row.namaFile || "Tanpa nama")}</span>`;
+                const waktu = row.waktu ? escapeHistoryText(row.waktu) : "—";
+                const statusText = escapeHistoryText(row.status || "Tercatat");
+                return `<tr>
+                    <td class="px-5 py-4">${fileCell}<div class="text-xs text-[#8AA0B2] mt-1">${escapeHistoryText(row.keterangan || "")}</div></td>
+                    <td class="px-5 py-4 text-[#71899C]">${escapeHistoryText(row.nama || "—")}<div class="text-xs mt-1">${escapeHistoryText(row.email || "")}</div></td>
+                    <td class="px-5 py-4 text-[#71899C]">${escapeHistoryText(row.folderTujuan || "—")}</td>
+                    <td class="px-5 py-4 text-[#71899C]">${waktu}</td>
+                    <td class="px-5 py-4"><span class="px-3 py-1.5 rounded-full bg-[#EAF8F0] text-[#4E9A70] text-xs font-bold">${statusText}</span></td>
+                </tr>`;
+            }).join("");
+        } catch (error) {
+            body.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-red-500">Gagal memuat riwayat. Periksa akses API atau izin CORS. (${escapeHistoryText(error.message)})</td></tr>`;
+        }
+    };
+
+    // POST text/plain menghindari preflight CORS. no-cors berarti browser tidak dapat membaca respons;
+    // catatan akan dikirim setelah Graph mengonfirmasi file berhasil diunggah.
+    window.recordUploadHistory = async function(data) {
+        await fetch(FILE_CENTER_API, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "add", ...data })
+        });
+    };
+
+    // Coba tampilkan riwayat saat halaman dibuka.
+    window.addEventListener("DOMContentLoaded", () => window.loadUploadHistory());
 </script>
 
 
@@ -2279,200 +2347,35 @@
  "use strict";
  const CLIENT_ID="09fbce40-e7f5-48f7-8b74-6219f124e597";
  const GRAPH="https://graph.microsoft.com/v1.0";
- // Setelah Apps Script dibuat dan di-deploy, tempel URL Web App di bawah ini.
- const APPS_SCRIPT_URL="ISI_URL_WEB_APP_APPS_SCRIPT_DI_SINI";
  const SCOPES=["Files.ReadWrite"];
  const REDIRECT=location.origin+location.pathname;
  let app,account,accessToken=null,folderId=null,folderName="OneDrive",items=[];
  let uploadTargetId=null,uploadTargetName="OneDrive";
  const $=id=>document.getElementById(id);
  const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- const size=n=>{if(n==null||!Number.isFinite(Number(n)))return "—";let v=Number(n),u=["B","KB","MB","GB","TB"],i=0;while(v>=1024&&i<u.length-1){v/=1024;i++;}return v.toFixed(i?1:0)+" "+u[i];};
+ const size=n=>{if(n==null)return "—";let u=["B","KB","MB","GB","TB"],i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return n.toFixed(i?1:0)+" "+u[i];};
  const status=(m,bad=false)=>{if($("connectionStatus")){$("connectionStatus").textContent=m;$("connectionStatus").className="text-sm mt-1 "+(bad?"text-red-600":"text-[#7D94A8]");}};
  function init(){if(!window.msal)throw Error("Microsoft login gagal dimuat. Periksa koneksi internet.");if(!app)app=new msal.PublicClientApplication({auth:{clientId:CLIENT_ID,authority:"https://login.microsoftonline.com/common/",redirectUri:REDIRECT},cache:{cacheLocation:"sessionStorage"}});return app;}
- async function login(){
-   init(); account=account||app.getAllAccounts()[0];
-   if(!account){const r=await app.loginPopup({scopes:SCOPES});account=r.account;}
-   try{const r=await app.acquireTokenSilent({scopes:SCOPES,account});accessToken=r.accessToken;}
-   catch{const r=await app.acquireTokenPopup({scopes:SCOPES,account});accessToken=r.accessToken;}
-   if($("signedInEmail"))$("signedInEmail").textContent=account.username||account.name||"";
-   return accessToken;
- }
- async function api(path,options={}){
-   if(!accessToken)await login();
-   const r=await fetch(path.startsWith("http")?path:GRAPH+path,{...options,headers:{Authorization:"Bearer "+accessToken,...(options.headers||{})}});
-   if(!r.ok){let msg="";try{msg=(await r.json()).error?.message||"";}catch{}throw Error("Microsoft Graph "+r.status+(msg?": "+msg:""));}
-   return r.status===204?null:r.json();
- }
- async function children(id){
-   let url=id?`/me/drive/items/${encodeURIComponent(id)}/children?$top=200`:"/me/drive/root/children?$top=200";
-   let r=await api(url),out=r.value||[];
-   while(r["@odata.nextLink"]){r=await api(r["@odata.nextLink"]);out.push(...(r.value||[]));}
-   return out;
- }
- function appsScriptReady(){return APPS_SCRIPT_URL.startsWith("https://script.google.com/macros/s/");}
- function loadUploadHistory(){
-   const body=$("uploadHistoryBody"); if(!body)return;
-   if(!appsScriptReady()){body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Hubungkan Apps Script untuk menampilkan riwayat upload.</td></tr>';return;}
-   const callback="fcHistoryCallback_"+Date.now()+"_"+Math.floor(Math.random()*10000);
-   const script=document.createElement("script");
-   const timer=setTimeout(()=>{cleanup();body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-red-500">Riwayat gagal dimuat. Periksa URL dan izin deployment Apps Script.</td></tr>';},15000);
-   function cleanup(){clearTimeout(timer);delete window[callback];script.remove();}
-   window[callback]=(result)=>{
-     cleanup();
-     if(!result||result.ok!==true){body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-red-500">Tidak dapat membaca riwayat dari Spreadsheet.</td></tr>';return;}
-     const rows=Array.isArray(result.rows)?result.rows:[];
-     body.innerHTML=rows.length?rows.map(r=>`<tr>
-       <td class="px-5 py-4"><div class="font-semibold break-all">${esc(r.namaFile||"—")}</div><div class="text-xs text-[#8AA0B2] mt-1">${esc(r.keterangan||"")}</div></td>
-       <td class="px-5 py-4 text-[#71899C]"><div>${esc(r.namaPengirim||"—")}</div><div class="text-xs">${esc(r.emailPengirim||"")}</div></td>
-       <td class="px-5 py-4 text-[#71899C]">${esc(r.folderTujuan||"OneDrive")}</td>
-       <td class="px-5 py-4 text-[#71899C]">${r.waktu?esc(new Date(r.waktu).toLocaleString("id-ID")):"—"}</td>
-       <td class="px-5 py-4"><span class="px-3 py-1.5 rounded-full text-xs font-bold ${r.status==="Berhasil"?"bg-[#EAF8F0] text-[#4E9A70]":"bg-red-50 text-red-600"}">${esc(r.status||"—")}</span></td>
-     </tr>`).join(""):'<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Belum ada riwayat upload.</td></tr>';
-   };
-   script.onerror=()=>{cleanup();body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-red-500">Gagal menghubungi Apps Script.</td></tr>';};
-   script.src=APPS_SCRIPT_URL+"?action=history&callback="+encodeURIComponent(callback)+"&_="+Date.now();
-   document.body.appendChild(script);
- }
- function saveUploadHistory(data){
-   if(!appsScriptReady())return;
-   // text/plain + no-cors menghindari preflight browser; status tidak bisa dikonfirmasi dari browser.
-   fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"log",...data})}).catch(()=>{});
- }
- function icon(item){
-   if(item.folder)return "fa-folder";
-   const e=(item.name||"").split(".").pop().toLowerCase();
-   if(e==="pdf")return "fa-file-pdf";
-   if(["doc","docx"].includes(e))return "fa-file-word";
-   if(["xls","xlsx","csv"].includes(e))return "fa-file-excel";
-   if(["ppt","pptx"].includes(e))return "fa-file-powerpoint";
-   if(["jpg","jpeg","png","gif","webp"].includes(e))return "fa-file-image";
-   return "fa-file";
- }
- function render(){
-   const body=$("onedriveFileTable"); if(!body)return;
-   const q=($("oneDriveSearch")?.value||"").toLowerCase();
-   const rows=items.filter(x=>(x.name||"").toLowerCase().includes(q));
-   if(!rows.length){body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Tidak ada file atau folder pada pencarian/lokasi ini.</td></tr>';return;}
-   body.innerHTML=rows.map(x=>`<tr>
-     <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4388C8] flex items-center justify-center"><i class="fa-solid ${icon(x)}"></i></div><span class="font-semibold break-all">${esc(x.name)}</span></div></td>
-     <td class="px-5 py-4 text-[#71899C]">${x.folder?"Folder":esc(folderName)}</td>
-     <td class="px-5 py-4 text-[#71899C]">${x.folder?(x.folder.childCount??"—")+" item":size(x.size)}</td>
-     <td class="px-5 py-4 text-[#71899C]">${x.lastModifiedDateTime?new Date(x.lastModifiedDateTime).toLocaleDateString("id-ID"):"—"}</td>
-     <td class="px-5 py-4 text-right">${x.folder?`<button class="text-[#4B91CF] font-semibold" data-folder="${esc(x.id)}" data-name="${esc(x.name)}">Buka</button>`:`<a class="text-[#4B91CF] font-semibold" target="_blank" rel="noopener" href="${esc(x.webUrl||"#")}">Buka file</a>`}</td>
-   </tr>`).join("");
-   body.querySelectorAll("[data-folder]").forEach(b=>b.onclick=()=>load(b.dataset.folder,b.dataset.name));
- }
- function renderFolders(arr){
-   const grid=$("liveFolderGrid"); if(!grid)return;
-   const f=arr.filter(x=>x.folder);
-   if($("folderConnectionStatus"))$("folderConnectionStatus").textContent="Folder yang tampil diambil dari OneDrive akun yang terhubung.";
-   grid.innerHTML=f.length?f.map(x=>`<button class="card p-4 text-left hover:bg-[#F7FBFF]" data-live="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-2xl text-[#4B91CF]"></i><p class="font-bold mt-3 break-words">${esc(x.name)}</p><p class="text-xs text-[#8AA0B2] mt-1">${x.folder.childCount??0} item</p></button>`).join(""):'<p class="text-sm text-[#8AA0B2]">Tidak ada subfolder di lokasi ini.</p>';
-   grid.querySelectorAll("[data-live]").forEach(b=>b.onclick=()=>{showPage("onedrive");load(b.dataset.live,b.dataset.name);});
- }
- function renderDashboardFolders(rootItems){
-   const box=$("dashboardFolderList"); if(!box)return;
-   const folders=rootItems.filter(x=>x.folder).slice(0,5);
-   box.innerHTML=folders.length?folders.map(x=>`<button class="w-full flex items-center gap-3 p-3 rounded-xl bg-[#F7FBFF] text-left hover:bg-[#EDF7FF]" data-dash-folder="${esc(x.id)}" data-name="${esc(x.name)}">
-     <div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4B91CF] flex items-center justify-center"><i class="fa-solid fa-folder"></i></div>
-     <div class="min-w-0"><p class="text-sm font-semibold truncate">${esc(x.name)}</p><p class="text-xs text-[#8AA0B2]">${x.folder.childCount??0} item</p></div></button>`).join(""):'<p class="text-sm text-[#8AA0B2] p-3">Belum ada folder di OneDrive.</p>';
-   box.querySelectorAll("[data-dash-folder]").forEach(b=>b.onclick=()=>{showPage("onedrive");load(b.dataset.dashFolder,b.dataset.name);});
- }
- function renderRecent(allItems){
-   const box=$("dashboardRecentFiles"); if(!box)return;
-   const recent=allItems.filter(x=>!x.folder).sort((a,b)=>new Date(b.createdDateTime||b.lastModifiedDateTime||0)-new Date(a.createdDateTime||a.lastModifiedDateTime||0)).slice(0,5);
-   box.innerHTML=recent.length?recent.map(x=>`<div class="p-5 flex items-center gap-4">
-     <div class="w-11 h-11 rounded-xl bg-[#EAF5FF] text-[#4388C8] flex items-center justify-center"><i class="fa-solid ${icon(x)}"></i></div>
-     <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${esc(x.name)}</p><p class="text-xs text-[#8AA0B2] mt-1">${size(x.size)}${(x.createdDateTime||x.lastModifiedDateTime)?" • "+new Date(x.createdDateTime||x.lastModifiedDateTime).toLocaleString("id-ID"):""}</p></div>
-     <a class="text-xs text-[#4B91CF] font-semibold" href="${esc(x.webUrl||"#")}" target="_blank" rel="noopener">Buka</a></div>`).join(""):'<div class="p-5 text-sm text-[#8AA0B2]">Belum ada file di OneDrive.</div>';
- }
- async function loadDashboardData(){
-   status("Memuat data dashboard dari OneDrive...");
-   try{
-     const rootItems=await children(null);
-     let all=[...rootItems],queue=rootItems.filter(x=>x.folder).map(x=>({id:x.id,depth:1}));
-     // Traverse folders to count files and folders accurately; depth limit avoids runaway requests in very deep structures.
-     while(queue.length){
-       const batch=queue.splice(0,10);
-       const results=await Promise.all(batch.map(async f=>({folder:f,children:await children(f.id).catch(()=>[])})));
-       for(const result of results){
-         all.push(...result.children);
-         if(result.folder.depth<12)for(const child of result.children)if(child.folder)queue.push({id:child.id,depth:result.folder.depth+1});
-       }
-     }
-     const files=all.filter(x=>!x.folder),folders=all.filter(x=>x.folder);
-     if($("statTotalFiles"))$("statTotalFiles").textContent=files.length.toLocaleString("id-ID");
-     if($("statTotalFolders"))$("statTotalFolders").textContent=folders.length.toLocaleString("id-ID");
-     const today=new Date(); const isToday=x=>{if(!x.createdDateTime)return false;const d=new Date(x.createdDateTime);return d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();};
-     if($("statTodayUploads"))$("statTodayUploads").textContent=files.filter(isToday).length.toLocaleString("id-ID");
-     try{const drive=await api("/me/drive?$select=quota");const used=drive.quota?.used; if($("statStorage"))$("statStorage").textContent=used==null?"—":size(used);}
-     catch{if($("statStorage"))$("statStorage").textContent=size(files.reduce((sum,x)=>sum+(Number(x.size)||0),0));}
-     renderRecent(all);
-     renderDashboardFolders(rootItems);
-     status(`Terhubung. ${files.length} file dan ${folders.length} folder ditemukan di OneDrive.`);
-   }catch(e){status(e.message,true);}
- }
- async function load(id=null,name="OneDrive"){
-   try{
-     status("Memuat isi OneDrive...");
-     folderId=id;folderName=name;items=await children(id);render();renderFolders(items);
-     status(`Terhubung. ${items.length} item di ${name}.`);
-     if(id===null)await loadDashboardData();
-   }catch(e){status(e.message,true);}
- }
+ async function login(){init();account=account||app.getAllAccounts()[0];if(!account){let r=await app.loginPopup({scopes:SCOPES});account=r.account;}try{let r=await app.acquireTokenSilent({scopes:SCOPES,account});accessToken=r.accessToken;}catch{let r=await app.acquireTokenPopup({scopes:SCOPES,account});accessToken=r.accessToken;}if($("signedInEmail"))$("signedInEmail").textContent=account.username||account.name||"";return accessToken;}
+ async function api(path,options={}){if(!accessToken)await login();let r=await fetch(path.startsWith("http")?path:GRAPH+path,{...options,headers:{Authorization:"Bearer "+accessToken,...(options.headers||{})}});if(!r.ok){let msg="";try{msg=(await r.json()).error?.message||"";}catch{}throw Error("Microsoft Graph "+r.status+(msg?": "+msg:""));}return r.status===204?null:r.json();}
+ async function children(id){let url=id?`/me/drive/items/${encodeURIComponent(id)}/children?$top=200`:"/me/drive/root/children?$top=200";let r=await api(url),out=r.value||[];while(r["@odata.nextLink"]){r=await api(r["@odata.nextLink"]);out.push(...(r.value||[]));}return out;}
+ function icon(item){if(item.folder)return "fa-folder";let e=item.name.split(".").pop().toLowerCase();if(e==="pdf")return "fa-file-pdf";if(["doc","docx"].includes(e))return "fa-file-word";if(["xls","xlsx","csv"].includes(e))return "fa-file-excel";if(["ppt","pptx"].includes(e))return "fa-file-powerpoint";if(["jpg","jpeg","png","gif","webp"].includes(e))return "fa-file-image";return "fa-file";}
+ function render(){let body=$("onedriveFileTable");if(!body)return;let q=($("oneDriveSearch")?.value||"").toLowerCase();let rows=items.filter(x=>x.name.toLowerCase().includes(q));if(!rows.length){body.innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center text-[#8AA0B2]">Tidak ada file atau folder pada pencarian/lokasi ini.</td></tr>';return;}body.innerHTML=rows.map(x=>`<tr><td class="px-5 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-[#EAF5FF] text-[#4388C8] flex items-center justify-center"><i class="fa-solid ${icon(x)}"></i></div><span class="font-semibold break-all">${esc(x.name)}</span></div></td><td class="px-5 py-4 text-[#71899C]">${x.folder?"Folder":esc(folderName)}</td><td class="px-5 py-4 text-[#71899C]">${x.folder?(x.folder.childCount??"—")+" item":size(x.size)}</td><td class="px-5 py-4 text-[#71899C]">${x.lastModifiedDateTime?new Date(x.lastModifiedDateTime).toLocaleDateString("id-ID"):"—"}</td><td class="px-5 py-4 text-right">${x.folder?`<button class="text-[#4B91CF] font-semibold" data-folder="${esc(x.id)}" data-name="${esc(x.name)}">Buka</button>`:`<a class="text-[#4B91CF] font-semibold" target="_blank" rel="noopener" href="${esc(x.webUrl||"#")}">Buka file</a>`}</td></tr>`).join("");body.querySelectorAll("[data-folder]").forEach(b=>b.onclick=()=>load(b.dataset.folder,b.dataset.name));}
+ async function load(id=null,name="OneDrive"){try{status("Memuat isi OneDrive...");folderId=id;folderName=name;items=await children(id);render();status(`Terhubung. ${items.length} item di ${name}.`);renderFolders(items);}catch(e){status(e.message,true);}}
+ function renderFolders(arr){let grid=$("liveFolderGrid");if(!grid)return;let f=arr.filter(x=>x.folder);$("folderConnectionStatus").textContent="Folder yang tampil diambil dari OneDrive akun yang terhubung.";grid.innerHTML=f.length?f.map(x=>`<button class="card p-4 text-left hover:bg-[#F7FBFF]" data-live="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-2xl text-[#4B91CF]"></i><p class="font-bold mt-3 break-words">${esc(x.name)}</p><p class="text-xs text-[#8AA0B2] mt-1">${x.folder.childCount??0} item</p></button>`).join(""):'<p class="text-sm text-[#8AA0B2]">Tidak ada subfolder di lokasi ini.</p>';grid.querySelectorAll("[data-live]").forEach(b=>b.onclick=()=>{showPage("onedrive");load(b.dataset.live,b.dataset.name);});}
  $("loginMicrosoft")?.addEventListener("click",async()=>{try{await login();await load();}catch(e){status(e.message||"Login gagal.",true);}});
- $("refreshOneDrive")?.addEventListener("click",async()=>{try{await login();await load(folderId,folderName);if(folderId!==null)await loadDashboardData();}catch(e){status(e.message,true);}});
- $("logoutMicrosoft")?.addEventListener("click",async()=>{
-   try{init();const a=account||app.getAllAccounts()[0];accessToken=null;account=null;if(a)await app.logoutPopup({account:a});
-     status("Sudah keluar.");if($("signedInEmail"))$("signedInEmail").textContent="";
-     if($("onedriveFileTable"))$("onedriveFileTable").innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center">Masuk kembali untuk melihat file.</td></tr>';
-     ["statTotalFiles","statTotalFolders","statTodayUploads","statStorage"].forEach(id=>{if($(id))$(id).textContent="—";});
-     if($("dashboardRecentFiles"))$("dashboardRecentFiles").innerHTML='<div class="p-5 text-sm text-[#8AA0B2]">Hubungkan OneDrive untuk menampilkan file terbaru.</div>';
-     if($("dashboardFolderList"))$("dashboardFolderList").innerHTML='<p class="text-sm text-[#8AA0B2] p-3">Hubungkan OneDrive untuk menampilkan folder.</p>';
-   }catch(e){status(e.message,true);}
- });
+ $("refreshOneDrive")?.addEventListener("click",async()=>{try{await login();await load(folderId,folderName);}catch(e){status(e.message,true);}});
+ $("logoutMicrosoft")?.addEventListener("click",async()=>{try{init();let a=account||app.getAllAccounts()[0];accessToken=null;account=null;if(a)await app.logoutPopup({account:a});status("Sudah keluar.");$("signedInEmail").textContent="";$("onedriveFileTable").innerHTML='<tr><td colspan="5" class="px-5 py-8 text-center">Masuk kembali untuk melihat file.</td></tr>';}catch(e){status(e.message,true);}});
  $("oneDriveSearch")?.addEventListener("input",render);
-
- // Folder picker menggunakan folder asli di OneDrive.
- window.openFolderModal=async()=>{
-   if(!account){alert("Masuk Microsoft dahulu melalui menu File OneDrive.");showPage("onedrive");return;}
-   $("folderModal").classList.add("show");await pickerLoad(null,"OneDrive");
- };
- async function pickerLoad(id,name){
-   uploadTargetId=id;uploadTargetName=name;
-   const list=$("folderPickerList");if(!list)return;
-   $("folderPickerPath").textContent=name;
-   try{
-     const arr=await children(id),dirs=arr.filter(x=>x.folder);
-     list.innerHTML=dirs.length?dirs.map(x=>`<button class="w-full text-left p-3 rounded-xl hover:bg-[#F1F8FE] flex items-center gap-3" data-pick="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-[#4B91CF]"></i><span class="font-semibold text-sm">${esc(x.name)}</span><i class="fa-solid fa-chevron-right ml-auto text-xs"></i></button>`).join(""):'<p class="text-sm text-[#8AA0B2] p-3">Tidak ada subfolder. Kamu dapat memilih folder ini.</p>';
-     list.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>pickerLoad(b.dataset.pick,b.dataset.name));
-   }catch(e){list.innerHTML=`<p class="text-sm text-red-500">${esc(e.message)}</p>`;}
- }
+ // Folder selector navigates real OneDrive folders; choose current location as upload target.
+ const oldOpen=window.openFolderModal;
+ window.openFolderModal=async()=>{if(!account){alert("Masuk Microsoft dahulu melalui menu File OneDrive.");showPage("onedrive");return;}$("folderModal").classList.add("show");await pickerLoad(null,"OneDrive");};
+ async function pickerLoad(id,name){uploadTargetId=id;uploadTargetName=name;let list=$("folderPickerList");if(!list){alert("Komponen pemilih folder tidak ditemukan di HTML.");return;}$("folderPickerPath").textContent=name;try{let arr=await children(id);let dirs=arr.filter(x=>x.folder);list.innerHTML=dirs.length?dirs.map(x=>`<button class="w-full text-left p-3 rounded-xl hover:bg-[#F1F8FE] flex items-center gap-3" data-pick="${esc(x.id)}" data-name="${esc(x.name)}"><i class="fa-solid fa-folder text-[#4B91CF]"></i><span class="font-semibold text-sm">${esc(x.name)}</span><i class="fa-solid fa-chevron-right ml-auto text-xs"></i></button>`).join(""):'<p class="text-sm text-[#8AA0B2] p-3">Tidak ada subfolder. Kamu dapat memilih folder ini.</p>';list.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>pickerLoad(b.dataset.pick,b.dataset.name));}catch(e){list.innerHTML=`<p class="text-sm text-red-500">${esc(e.message)}</p>`;}}
  $("folderPickerBack")?.addEventListener("click",()=>pickerLoad(null,"OneDrive"));
  $("chooseCurrentFolder")?.addEventListener("click",()=>{$("selectedFolder").textContent=uploadTargetName;$("folderModal").classList.remove("show");});
-
- // Upload file sungguhan ke OneDrive.
- window.startUpload=async()=>{
-   if(!files.length){alert("Silakan pilih file terlebih dahulu.");return;}
-   if(!$("nama").value.trim()||!$("email").value.trim()){alert("Nama dan email pengirim wajib diisi.");return;}
-   if(!account){alert("Masuk Microsoft terlebih dahulu.");showPage("onedrive");return;}
-   try{
-     await login();$("uploadModal").classList.add("show");
-     for(let i=0;i<files.length;i++){
-       const f=files[i];$("uploadFileName").textContent=f.name;
-       if(f.size>250*1024*1024)throw Error(f.name+" lebih dari 250 MB; upload bertahap belum diaktifkan.");
-       const base=uploadTargetId?`/me/drive/items/${encodeURIComponent(uploadTargetId)}`:"/me/drive/root";
-       const uploaded=await api(`${base}:/${encodeURIComponent(f.name)}:/content`,{method:"PUT",headers:{"Content-Type":f.type||"application/octet-stream"},body:f});
-       saveUploadHistory({waktu:new Date().toISOString(),namaPengirim:$("nama").value.trim(),emailPengirim:$("email").value.trim(),keterangan:$("keterangan").value.trim(),namaFile:f.name,folderTujuan:uploadTargetName,ukuranByte:f.size,status:"Berhasil",fileUrl:uploaded?.webUrl||"",fileId:uploaded?.id||""});
-       const p=Math.round((i+1)/files.length*100);$("uploadProgress").style.width=p+"%";$("uploadPercent").textContent=p+"%";$("chunkInfo").textContent=`Berhasil mengunggah ${i+1} dari ${files.length} file`;
-     }
-     files=[];fileInput.value="";renderFiles();$("uploadTitle").textContent="Upload Berhasil";$("chunkInfo").textContent="File sudah tersimpan di OneDrive.";
-     setTimeout(()=>{$("uploadModal").classList.remove("show");$("uploadTitle").textContent="Mengupload File";$("uploadProgress").style.width="0%";$("uploadPercent").textContent="0%";showPage("onedrive");load(folderId,folderName);loadDashboardData();loadUploadHistory();},1000);
-   }catch(e){$("uploadModal").classList.remove("show");alert("Upload gagal: "+e.message);}
- };
+ // Real upload replaces the previous simulated progress.
+ window.startUpload=async()=>{if(!files.length){alert("Silakan pilih file terlebih dahulu.");return;}if(!$("nama").value.trim()||!$("email").value.trim()){alert("Nama dan email pengirim wajib diisi.");return;}if(!account){alert("Masuk Microsoft terlebih dahulu.");showPage("onedrive");return;}try{await login();$("uploadModal").classList.add("show");for(let i=0;i<files.length;i++){let f=files[i];$("uploadFileName").textContent=f.name;if(f.size>250*1024*1024)throw Error(f.name+" lebih dari 250 MB; upload bertahap belum diaktifkan.");let base=uploadTargetId?`/me/drive/items/${encodeURIComponent(uploadTargetId)}`:"/me/drive/root";let uploaded=await api(`${base}:/${encodeURIComponent(f.name)}:/content`,{method:"PUT",headers:{"Content-Type":f.type||"application/octet-stream"},body:f});try{await window.recordUploadHistory({nama:$("nama").value.trim(),email:$("email").value.trim(),keterangan:$("keterangan").value.trim(),namaFile:f.name,folderTujuan:uploadTargetName,ukuranByte:f.size,status:"Berhasil",fileUrl:uploaded?.webUrl||"",fileId:uploaded?.id||""});}catch(logError){console.warn("File berhasil diunggah, tetapi pengiriman riwayat gagal:",logError);}let p=Math.round((i+1)/files.length*100);$("uploadProgress").style.width=p+"%";$("uploadPercent").textContent=p+"%";$("chunkInfo").textContent=`Berhasil mengunggah ${i+1} dari ${files.length} file`;}files=[];fileInput.value="";renderFiles();if(window.loadUploadHistory)window.loadUploadHistory();$("uploadTitle").textContent="Upload Berhasil";$("chunkInfo").textContent="File sudah tersimpan di OneDrive.";setTimeout(()=>{$("uploadModal").classList.remove("show");$("uploadTitle").textContent="Mengupload File";$("uploadProgress").style.width="0%";$("uploadPercent").textContent="0%";showPage("onedrive");load(folderId,folderName);},1000);}catch(e){$("uploadModal").classList.remove("show");alert("Upload gagal: "+e.message);}};
  if(location.protocol==="file:")status("Buka melalui VS Code Live Server, jangan klik file HTML langsung.",true);
- // Restore session UI if a Microsoft account is already cached.
- try{init();const cached=app.getAllAccounts()[0];if(cached){account=cached;login().then(()=>load()).catch(()=>{});}}catch(e){status(e.message,true);}
 })();
 </script>
 
